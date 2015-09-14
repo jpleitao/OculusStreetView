@@ -413,7 +413,8 @@ function getParams() {
     var items = window.location.search.substring(1).split("&");
     for (var i=0;i<items.length;i++) {
         var kvpair = items[i].split("=");
-        params[kvpair[0]] = unescape(kvpair[1]);
+        // params[kvpair[0]] = unescape(kvpair[1]);
+        params[kvpair[0]] = decodeURI(kvpair[1]);
     }
     return params;
 }
