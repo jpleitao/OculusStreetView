@@ -19,6 +19,9 @@
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Modified by jpleitao on 14/09/2015 in function "WebKitPlatform.factory"
+ * (+/- line 157
  */
 
 (function(exports) {
@@ -154,7 +157,8 @@
 				});
 			} else if (typeof(navigator.webkitGetGamepads) !== 'undefined') {
 				platform = new WebKitPlatform(listener, function() {
-					return navigator.webkitGetGamepads();
+					//return navigator.webkitGetGamepads();
+					return navigator.getGamepads();
 				});
 			}
 		}
