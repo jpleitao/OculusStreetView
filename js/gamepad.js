@@ -20,8 +20,10 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * Modified by jpleitao on 14/09/2015 in function "WebKitPlatform.factory"
- * (+/- line 157
+ * Modified by jpleitao on 14/09/2015 . Original file can be found in
+ * https://github.com/jpleitao/OculusStreetView/commit/19e8b5eff1953700a1cb0ae234341c6d84e9f338
+ *
+ * gamepad.js -- Javascript library to enable using gamepads and joysticks in the browser. Currently deprecated
  */
 
 (function(exports) {
@@ -173,7 +175,7 @@
 	 */
 	WebKitPlatform.getType = function() {
 		return 'WebKit';
-	},
+	};
 
 	/**
 	 * @method getType()
@@ -181,7 +183,7 @@
 	 */
 	WebKitPlatform.prototype.getType = function() {
 		return WebKitPlatform.getType();
-	},
+	};
 
 	/**
 	 * @method isSupported
@@ -261,7 +263,7 @@
 	 */
 	FirefoxPlatform.getType = function() {
 		return 'Firefox';
-	},
+	};
 
 	/**
 	 * @method getType()
@@ -269,7 +271,7 @@
 	 */
 	FirefoxPlatform.prototype.getType = function() {
 		return FirefoxPlatform.getType();
-	},
+	};
 
 	/**
 	 * @method isSupported
@@ -1013,7 +1015,7 @@
 		if (this.gamepads.length > 0) {
 			this._fire(Gamepad.Event.TICK, this.gamepads);
 		}
-	},
+	};
 
 	/**
 	 * Applies deadzone and maximization.

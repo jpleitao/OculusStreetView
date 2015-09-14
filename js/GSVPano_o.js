@@ -46,10 +46,8 @@ GSVPANO.PanoLoader = function (parameters) {
 	};
 
 	this.adaptTextureToZoom = function () {
-		var w = 416 * Math.pow(2, _zoom),
-		h = (416 * Math.pow(2, _zoom - 1));
-		_canvas.width = w;
-		_canvas.height = h;
+		_canvas.width =  416 * Math.pow(2, _zoom);
+		_canvas.height = 416 * Math.pow(2, _zoom - 1);
 		_ctx.translate( _canvas.width, 0);
 		_ctx.scale(-1, 1);
 	};
@@ -121,7 +119,7 @@ GSVPANO.PanoLoader = function (parameters) {
 			self.loading = false;
 			self.throwError('Could not retrieve panorama for the following reason: ' + status);
 		}
-	},
+	};
 
 	this.load = function (location, cache) {
 		var self = this;
@@ -142,5 +140,4 @@ GSVPANO.PanoLoader = function (parameters) {
 	};
 
 	this.setZoom( _parameters.zoom || 1 );
-
 };
