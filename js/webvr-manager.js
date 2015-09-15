@@ -46,7 +46,6 @@ function WebVRManager(effect, opts) {
     // Get the vrButton (could be done with jquery but then a lot of code would have to be changed, so let's avoid that
     // for now)
     this.vrButton = document.getElementById("vrButton");
-    console.log(this.vrButton);
     // Add preventDefault Event Listener to the button
     this.vrButton.addEventListener('dragstart', function(e) {
         // Ignore drag
@@ -59,12 +58,10 @@ function WebVRManager(effect, opts) {
     // Check if the browser is compatible with WebVR.
     this.isHMDAvailable().then(function(isCompatible) {
         if (isCompatible) {
-            console.log("Browser is compatible with WebVR");
             this.setMode(Modes.COMPATIBLE);
             // If it is, activate VR mode.
             this.activateVR();
         } else {
-            console.log("Browser is not compatible with WebVR");
           this.setMode(Modes.INCOMPATIBLE);
           // Incompatible? At least prepare for "immersive" mode.
           this.activateBig();

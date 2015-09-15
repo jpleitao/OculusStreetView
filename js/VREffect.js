@@ -41,16 +41,26 @@ THREE.VREffect = function ( renderer, done ) {
 			navigator.mozGetVRDevices( gotVRDevices );
 		}
 		function gotVRDevices( devices ) {
+            console.log("Entrei no gotVRDevices and have " + devices.length);
 			var vrHMD;
 			var error;
 			for ( var i = 0; i < devices.length; ++ i ) {
+                console.log("Device number " + (i+1));
 				if ( devices[i] instanceof HMDVRDevice ) {
 					vrHMD = devices[i];
-					self._vrHMD = vrHMD;
-					self.leftEyeTranslation = vrHMD.getEyeParameters("left").eyeTranslation;
-					self.rightEyeTranslation = vrHMD.getEyeParameters("right").eyeTranslation;
-					self.leftEyeFOV = vrHMD.getEyeParameters("left").recommendedFieldOfView;
-					self.rightEyeFOV = vrHMD.getEyeParameters("right").recommendedFieldOfView;
+                    self._vrHMD = vrHMD;
+
+                    if (vrHMD.getEyeParameters !== undefined) {
+                        self.leftEyeTranslation = vrHMD.getEyeParameters("left").eyeTranslation;
+                        self.rightEyeTranslation = vrHMD.getEyeParameters("right").eyeTranslation;
+                        self.leftEyeFOV = vrHMD.getEyeParameters("left").recommendedFieldOfView;
+                        self.rightEyeFOV = vrHMD.getEyeParameters("right").recommendedFieldOfView;
+                    } else {
+                        self.leftEyeTranslation = vrHMD.getEyeTranslation("left");
+                        self.rightEyeTranslation = vrHMD.getEyeTranslation("right");
+                        self.leftEyeFOV = vrHMD.getRecommendedEyeFieldOfView("left");
+                        self.rightEyeFOV = vrHMD.getRecommendedEyeFieldOfView("right");
+                    }
 					break; // We keep the first we encounter
 				}
 			}
@@ -93,6 +103,7 @@ THREE.VREffect = function ( renderer, done ) {
 			camera.updateMatrixWorld();
 		}
 
+        console.log(this.leftEyeFOV);
 		cameraLeft.projectionMatrix = this.FovToProjection( this.leftEyeFOV, true, camera.near, camera.far );
 		cameraRight.projectionMatrix = this.FovToProjection( this.rightEyeFOV, true, camera.near, camera.far );
 

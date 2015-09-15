@@ -111,16 +111,15 @@ function initWebGL() {
     // Create render
     try {
         renderer = new THREE.WebGLRenderer();
-    }
-    catch(e){
+    } catch(e){
         alert('This application needs WebGL enabled!');
         return false;
     }
 
     renderer.autoClearColor = false;
-    renderer.setSize( WIDTH, HEIGHT );
+    renderer.setSize(WIDTH, HEIGHT);
 
-    effect = new THREE.VREffect( renderer );
+    effect = new THREE.VREffect(renderer);
     effect.setSize(WIDTH, HEIGHT );
 
     vrmgr = new WebVRManager(effect);
@@ -133,31 +132,32 @@ function initControls() {
 
     // Keyboard
     // ---------------------------------------
-    var lastSpaceKeyTime = new Date(),
-      lastCtrlKeyTime = lastSpaceKeyTime;
+    var lastSpaceKeyTime = new Date(), lastCtrlKeyTime = lastSpaceKeyTime;
 
     $(document).keydown(function(e) {
         //console.log(e.keyCode);
         switch(e.keyCode) {
-        case 32: // Space
-            var spaceKeyTime = new Date();
-            if (spaceKeyTime-lastSpaceKeyTime < 300) {
-                $('.ui').toggle(200);
-            }
-            lastSpaceKeyTime = spaceKeyTime;
-            break;
-        case 17: // Ctrl
-            var ctrlKeyTime = new Date();
-            if (ctrlKeyTime-lastCtrlKeyTime < 300) {
-                moveToNextPlace();
-            }
-            lastCtrlKeyTime = ctrlKeyTime;
-            break;
-        case 18: // Alt
-            USE_DEPTH = !USE_DEPTH;
-            $('#depth').prop('checked', USE_DEPTH);
-            setSphereGeometry();
-            break;
+            case 32: // Space
+                var spaceKeyTime = new Date();
+                // Count double clicking
+                if (spaceKeyTime-lastSpaceKeyTime < 300) {
+                    $('.ui').toggle(200);
+                }
+                lastSpaceKeyTime = spaceKeyTime;
+                break;
+            case 17: // Ctrl
+                var ctrlKeyTime = new Date();
+                // Count double clicking
+                if (ctrlKeyTime-lastCtrlKeyTime < 300) {
+                    moveToNextPlace();
+                }
+                lastCtrlKeyTime = ctrlKeyTime;
+                break;
+            case 18: // Alt
+                USE_DEPTH = !USE_DEPTH;
+                $('#depth').prop('checked', USE_DEPTH);
+                setSphereGeometry();
+                break;
         }
     });
 
@@ -166,6 +166,7 @@ function initControls() {
     var viewer = $('#viewer');
 
     viewer.dblclick(function() {
+        console.log("double-click in the viewer!");
         moveToNextPlace();
     });
 
