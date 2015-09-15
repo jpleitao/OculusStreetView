@@ -17,12 +17,33 @@ var FAR = 1000;
 var USE_DEPTH = true;
 var WORLD_FACTOR = 1.0;
 
+var WEBSOCKET_ADDR;
+var scene;
+var camera;
+var controls;
+var projSphere;
+var progBarContainer;
+var progBar;
+var renderer;
+var effect;
+var vrmgr;
+var gamepad;
+var panoLoader;
+var panoDepthLoader;
+
+var marker;
+var currentLocation;
+var gmap;
+var svCoverage;
+var geocoder;
+
+
 // Globals
 // ----------------------------------------------
 var WIDTH, HEIGHT;
 var currHeading = 0;
 var centerHeading = 0;
-var navList = [];
+// var navList = [];
 
 var headingVector = new THREE.Euler();
 var gamepadMoveVector = new THREE.Vector3();
@@ -31,13 +52,17 @@ var gamepadMoveVector = new THREE.Vector3();
 // ----------------------------------------------
 function angleRangeDeg(angle) {
     angle %= 360;
-    if (angle < 0) angle += 360;
+    if (angle < 0) {
+        angle += 360;
+    }
     return angle;
 }
 
 function angleRangeRad(angle) {
     angle %= 2*Math.PI;
-    if (angle < 0) angle += 2*Math.PI;
+    if (angle < 0) {
+        angle += 2*Math.PI;
+    }
     return angle;
 }
 
@@ -57,34 +82,39 @@ function initWebGL() {
     scene = new THREE.Scene();
 
     // Create camera
-    camera = new THREE.PerspectiveCamera( 60, WIDTH/HEIGHT, 0.1, FAR );
-    camera.target = new THREE.Vector3( 1, 0, 0 );
-
+    camera = new THREE.PerspectiveCamera(60, WIDTH/HEIGHT, 0.1, FAR);
+    camera.target = new THREE.Vector3(1, 0, 0);
     controls  = new THREE.VRControls(camera);
 
-    scene.add( camera );
+    scene.add(camera);
 
     // Add projection sphere
-    projSphere = new THREE.Mesh( new THREE.SphereGeometry( 500, 512, 256, 0, Math.PI * 2, 0, Math.PI), new THREE.MeshBasicMaterial({ map: THREE.ImageUtils.loadTexture('placeholder.png'), side: THREE.DoubleSide}) );
+    projSphere = new THREE.Mesh(new THREE.SphereGeometry( 500, 512, 256, 0, Math.PI * 2, 0, Math.PI),
+                                new THREE.MeshBasicMaterial( {
+                                    map: THREE.ImageUtils.loadTexture('images/placeholder.png'),
+                                    side: THREE.DoubleSide
+                                }));
     projSphere.geometry.dynamic = true;
-    scene.add( projSphere );
+    scene.add(projSphere);
 
     // Add Progress Bar
-    progBarContainer = new THREE.Mesh( new THREE.BoxGeometry(1.2,0.2,0.1), new THREE.MeshBasicMaterial({color: 0xaaaaaa}));
+    progBarContainer = new THREE.Mesh(new THREE.BoxGeometry(1.2,0.2,0.1),
+                                      new THREE.MeshBasicMaterial({color: 0xaaaaaa}));
     progBarContainer.translateZ(-3);
-    camera.add( progBarContainer );
+    camera.add(progBarContainer);
 
-    progBar = new THREE.Mesh( new THREE.BoxGeometry(1.0,0.1,0.1), new THREE.MeshBasicMaterial({color: 0x0000ff}));
+    progBar = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.1,0.1),
+                             new THREE.MeshBasicMaterial({color: 0x0000ff}));
     progBar.translateZ(0.2);
     progBarContainer.add(progBar);
 
     // Create render
     try {
-    renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer();
     }
     catch(e){
-    alert('This application needs WebGL enabled!');
-    return false;
+        alert('This application needs WebGL enabled!');
+        return false;
     }
 
     renderer.autoClearColor = false;
@@ -245,7 +275,8 @@ function initPano() {
 
         if (window.history) {
             var newUrl = '?lat='+this.location.latLng.lat()+'&lng='+this.location.latLng.lng();
-            newUrl += USE_TRACKER ? '&sock='+escape(WEBSOCKET_ADDR.slice(5)) : '';
+            // newUrl += USE_TRACKER ? '&sock='+escape(WEBSOCKET_ADDR.slice(5)) : '';
+            newUrl += USE_TRACKER ? '&sock='+encodeURIComponent(WEBSOCKET_ADDR.slice(5)) : '';
             newUrl += '&q='+QUALITY;
             newUrl += '&s='+$('#settings').is(':visible');
             newUrl += '&heading='+currHeading;
@@ -308,7 +339,7 @@ function initGoogleMap() {
     google.maps.event.addListener(gmap, 'maptypeid_changed', function(event) {
     });
 
-    svCoverage= new google.maps.StreetViewCoverageLayer();
+    svCoverage = new google.maps.StreetViewCoverageLayer();
     svCoverage.setMap(gmap);
 
     geocoder = new google.maps.Geocoder();
@@ -420,6 +451,7 @@ function getParams() {
 }
 
 $(document).ready(function() {
+    var params;
 
     // Read parameters
     params = getParams();
@@ -429,8 +461,10 @@ $(document).ready(function() {
     if (params.lng !== undefined) {
         DEFAULT_LOCATION.lng = params.lng;
     }
+    console.log("This should be undefined: " + params.sock);
     if (params.sock !== undefined) {
-        WEBSOCKET_ADDR = 'ws://'+params.sock; USE_TRACKER = true;
+        WEBSOCKET_ADDR = 'ws://'+params.sock;
+        USE_TRACKER = true;
     }
     if (params.q !== undefined) {
         QUALITY = params.q;
@@ -449,11 +483,15 @@ $(document).ready(function() {
         WORLD_FACTOR = parseFloat(params.wf);
     }
 
-    WIDTH = window.innerWidth; HEIGHT = window.innerHeight;
+    // Get window width and height
+    WIDTH = window.innerWidth;
+    HEIGHT = window.innerHeight;
+
     $('.ui').tabs({
         activate: function( event, ui ) {
             var caller = event.target.id;
             if (caller == 'ui-main') {
+                // Activate div with id="ui-main"
                 $("#ui-main").tabs("option","active");
             }
         }
