@@ -2,6 +2,8 @@
  * @author troffmo5 / http://github.com/troffmo5
  *
  * Google Street View viewer for the Oculus Rift
+ *
+ * Modified by jpleitao / http://github.com/jpleitao
  */
 
 // Parameters
@@ -9,8 +11,6 @@
 var QUALITY = 3;
 var DEFAULT_LOCATION = { lat:44.301945982379095,  lng:9.211585521697998 };
 var USE_TRACKER = false;
-var GAMEPAD_SPEED = 0.04;
-var DEADZONE = 0.2;
 var SHOW_SETTINGS = true;
 var NAV_DELTA = 45;
 var FAR = 1000;
@@ -27,7 +27,6 @@ var progBar;
 var renderer;
 var effect;
 var vrmgr;
-var gamepad;
 var panoLoader;
 var panoDepthLoader;
 
@@ -46,31 +45,30 @@ var centerHeading = 0;
 // var navList = [];
 
 var headingVector = new THREE.Euler();
-var gamepadMoveVector = new THREE.Vector3();
 
 // Utility function
 // ----------------------------------------------
-function angleRangeDeg(angle) {
+function angleRangeDeg( angle ) {
     angle %= 360;
-    if (angle < 0) {
+    if ( angle < 0 ) {
         angle += 360;
     }
     return angle;
 }
 
-function angleRangeRad(angle) {
+function angleRangeRad( angle ) {
     angle %= 2*Math.PI;
-    if (angle < 0) {
+    if ( angle < 0 ) {
         angle += 2*Math.PI;
     }
     return angle;
 }
 
-function deltaAngleDeg(a,b) {
-    return Math.min(360-(Math.abs(a-b)%360),Math.abs(a-b)%360);
+function deltaAngleDeg( a, b ) {
+    return Math.min( 360 - ( Math.abs( a - b ) % 360 ), Math.abs( a - b ) % 360 );
 }
 
-function deltaAngleRas(a,b) {
+function deltaAngleRas( a, b ) {
   // todo
 }
 
@@ -82,50 +80,50 @@ function initWebGL() {
     scene = new THREE.Scene();
 
     // Create camera
-    camera = new THREE.PerspectiveCamera(60, WIDTH/HEIGHT, 0.1, FAR);
-    camera.target = new THREE.Vector3(1, 0, 0);
-    controls  = new THREE.VRControls(camera);
+    camera = new THREE.PerspectiveCamera( 60, WIDTH/HEIGHT, 0.1, FAR );
+    camera.target = new THREE.Vector3( 1, 0, 0 );
+    controls  = new THREE.VRControls( camera );
 
-    scene.add(camera);
+    scene.add( camera );
 
     // Add projection sphere
-    projSphere = new THREE.Mesh(new THREE.SphereGeometry( 500, 512, 256, 0, Math.PI * 2, 0, Math.PI),
-                                new THREE.MeshBasicMaterial( {
-                                    map: THREE.ImageUtils.loadTexture('images/placeholder.png'),
-                                    side: THREE.DoubleSide
-                                }));
+    projSphere = new THREE.Mesh( new THREE.SphereGeometry( 500, 512, 256, 0, Math.PI * 2, 0, Math.PI ),
+                                 new THREE.MeshBasicMaterial( {
+                                     map: THREE.ImageUtils.loadTexture( 'images/placeholder.png' ),
+                                     side: THREE.DoubleSide
+                                 } ) );
     projSphere.geometry.dynamic = true;
-    scene.add(projSphere);
+    scene.add( projSphere );
 
     // Add Progress Bar
-    progBarContainer = new THREE.Mesh(new THREE.BoxGeometry(1.2,0.2,0.1),
-                                      new THREE.MeshBasicMaterial({color: 0xaaaaaa}));
-    progBarContainer.translateZ(-3);
-    camera.add(progBarContainer);
+    progBarContainer = new THREE.Mesh( new THREE.BoxGeometry( 1.2, 0.2, 0.1),
+                                       new THREE.MeshBasicMaterial( {color: 0xaaaaaa} ) );
+    progBarContainer.translateZ( -3 );
+    camera.add( progBarContainer );
 
-    progBar = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.1,0.1),
-                             new THREE.MeshBasicMaterial({color: 0x0000ff}));
-    progBar.translateZ(0.2);
-    progBarContainer.add(progBar);
+    progBar = new THREE.Mesh( new THREE.BoxGeometry( 1.0, 0.1, 0.1 ),
+                              new THREE.MeshBasicMaterial( {color: 0x0000ff} ) );
+    progBar.translateZ( 0.2 );
+    progBarContainer.add( progBar );
 
     // Create render
     try {
         renderer = new THREE.WebGLRenderer();
-    } catch(e){
-        alert('This application needs WebGL enabled!');
+    } catch( e ){
+        alert( 'This application needs WebGL enabled!' );
         return false;
     }
 
     renderer.autoClearColor = false;
-    renderer.setSize(WIDTH, HEIGHT);
+    renderer.setSize( WIDTH, HEIGHT );
 
-    effect = new THREE.VREffect(renderer);
-    effect.setSize(WIDTH, HEIGHT );
+    effect = new THREE.VREffect( renderer );
+    effect.setSize( WIDTH, HEIGHT );
 
-    vrmgr = new WebVRManager(effect);
+    vrmgr = new WebVRManager( effect );
 
-    var viewer = $('#viewer');
-    viewer.append(renderer.domElement);
+    var viewer = $( '#viewer' );
+    viewer.append( renderer.domElement );
 }
 
 function initControls() {
@@ -134,28 +132,28 @@ function initControls() {
     // ---------------------------------------
     var lastSpaceKeyTime = new Date(), lastCtrlKeyTime = lastSpaceKeyTime;
 
-    $(document).keydown(function(e) {
+    $( document ).keydown( function( e ) {
         //console.log(e.keyCode);
-        switch(e.keyCode) {
+        switch( e.keyCode ) {
             case 32: // Space
                 var spaceKeyTime = new Date();
                 // Count double clicking
-                if (spaceKeyTime-lastSpaceKeyTime < 300) {
-                    $('.ui').toggle(200);
+                if ( spaceKeyTime - lastSpaceKeyTime < 300 ) {
+                    $( '.ui' ).toggle( 200 );
                 }
                 lastSpaceKeyTime = spaceKeyTime;
                 break;
             case 17: // Ctrl
                 var ctrlKeyTime = new Date();
                 // Count double clicking
-                if (ctrlKeyTime-lastCtrlKeyTime < 300) {
+                if ( ctrlKeyTime - lastCtrlKeyTime < 300 ) {
                     moveToNextPlace();
                 }
                 lastCtrlKeyTime = ctrlKeyTime;
                 break;
             case 18: // Alt
                 USE_DEPTH = !USE_DEPTH;
-                $('#depth').prop('checked', USE_DEPTH);
+                $( '#depth' ).prop( 'checked', USE_DEPTH );
                 setSphereGeometry();
                 break;
         }
@@ -163,21 +161,21 @@ function initControls() {
 
     // Mouse
     // ---------------------------------------
-    var viewer = $('#viewer');
+    var viewer = $( '#viewer' );
 
-    viewer.dblclick(function() {
-        console.log("double-click in the viewer!");
+    viewer.dblclick( function() {
+        console.log( "double-click in the viewer!" );
         moveToNextPlace();
     });
 }
 
 function initGui() {
     if (!SHOW_SETTINGS) {
-        $('.ui').hide();
+        $( '.ui' ).hide();
     }
 
-    $('#depth').change(function(event) {
-        USE_DEPTH = $('#depth').is(':checked');
+    $( '#depth' ).change( function( event ) {
+        USE_DEPTH = $( '#depth' ).is( ':checked' );
         setSphereGeometry();
     });
 
@@ -187,20 +185,20 @@ function initGui() {
 function initPano() {
     panoLoader = new GSVPANO.PanoLoader();
     panoDepthLoader = new GSVPANO.PanoDepthLoader();
-    panoLoader.setZoom(QUALITY);
+    panoLoader.setZoom( QUALITY );
 
     panoLoader.onProgress = function( progress ) {
         if (progress > 0) {
             progBar.visible = true;
-            progBar.scale = new THREE.Vector3(progress/100.0,1,1);
+            progBar.scale = new THREE.Vector3( progress / 100.0,  1,1 );
         }
-        $(".mapprogress").progressbar("option", "value", progress);
+        $( ".mapprogress" ).progressbar( "option", "value", progress );
 
     };
     panoLoader.onPanoramaData = function( result ) {
         progBarContainer.visible = true;
         progBar.visible = false;
-        $('.mapprogress').show();
+        $( '.mapprogress' ).show();
     };
 
     panoLoader.onNoPanoramaData = function( status ) {
@@ -208,8 +206,8 @@ function initPano() {
     };
 
     panoLoader.onPanoramaLoad = function() {
-        var a = THREE.Math.degToRad(90-panoLoader.heading);
-        projSphere.quaternion.setFromEuler(new THREE.Euler(0, a, 0, 'YZX'));
+        var a = THREE.Math.degToRad( 90-panoLoader.heading );
+        projSphere.quaternion.setFromEuler( new THREE.Euler( 0, a, 0, 'YZX' ) );
 
         projSphere.material.wireframe = false;
         projSphere.material.map.needsUpdate = true;
@@ -226,17 +224,17 @@ function initPano() {
 
         $('.mapprogress').hide();
 
-        if (window.history) {
-            var newUrl = '?lat='+this.location.latLng.lat()+'&lng='+this.location.latLng.lng();
-            // newUrl += USE_TRACKER ? '&sock='+escape(WEBSOCKET_ADDR.slice(5)) : '';
-            newUrl += USE_TRACKER ? '&sock='+encodeURIComponent(WEBSOCKET_ADDR.slice(5)) : '';
-            newUrl += '&q='+QUALITY;
-            newUrl += '&s='+$('#settings').is(':visible');
-            newUrl += '&heading='+currHeading;
-            window.history.pushState('','',newUrl);
+        if ( window.history ) {
+            // FIXME: Needed?
+            var newUrl = '?lat=' + this.location.latLng.lat() + '&lng=' + this.location.latLng.lng();
+            newUrl += USE_TRACKER ? '&sock=' + encodeURIComponent( WEBSOCKET_ADDR.slice(5) ) : '';
+            newUrl += '&q=' + QUALITY;
+            newUrl += '&s=' + $( '#settings' ).is( ':visible' );
+            newUrl += '&heading=' + currHeading;
+            window.history.pushState( '', '', newUrl );
         }
 
-        panoDepthLoader.load(this.location.pano);
+        panoDepthLoader.load( this.location.pano );
     };
 
     panoDepthLoader.onDepthLoad = function() {
@@ -249,6 +247,7 @@ function setSphereGeometry() {
     var geomParam = geom.parameters;
     var depthMap = panoDepthLoader.depthMap.depthMap;
     var y, x, u, v, radius, i=0;
+
     for ( y = 0; y <= geomParam.heightSegments; y ++ ) {
         for ( x = 0; x <= geomParam.widthSegments; x ++ ) {
             u = x / geomParam.widthSegments;
@@ -257,9 +256,11 @@ function setSphereGeometry() {
             radius = USE_DEPTH ? Math.min(depthMap[y*512 + x], FAR) : 500;
 
             var vertex = geom.vertices[i];
-            vertex.x = - radius * Math.cos( geomParam.phiStart + u * geomParam.phiLength ) * Math.sin( geomParam.thetaStart + v * geomParam.thetaLength );
+            vertex.x = - radius * Math.cos( geomParam.phiStart + u * geomParam.phiLength ) *
+                         Math.sin( geomParam.thetaStart + v * geomParam.thetaLength );
             vertex.y = radius * Math.cos( geomParam.thetaStart + v * geomParam.thetaLength );
-            vertex.z = radius * Math.sin( geomParam.phiStart + u * geomParam.phiLength ) * Math.sin( geomParam.thetaStart + v * geomParam.thetaLength );
+            vertex.z = radius * Math.sin( geomParam.phiStart + u * geomParam.phiLength ) *
+                       Math.sin( geomParam.thetaStart + v * geomParam.thetaLength );
             i++;
         }
     }
@@ -271,59 +272,58 @@ function initGoogleMap() {
 
     currentLocation = new google.maps.LatLng( DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lng );
 
-    var mapel = $('#map');
-    mapel.on('mousemove', function (e) {
+    var mapel = $( '#map' );
+    mapel.on( 'mousemove', function (e) {
         e.stopPropagation();
     });
-    gmap = new google.maps.Map(mapel[0], {
+
+    gmap = new google.maps.Map( mapel[0], {
         zoom: 14,
         center: currentLocation,
         mapTypeId: google.maps.MapTypeId.HYBRID,
         streetViewControl: false
     });
-    google.maps.event.addListener(gmap, 'click', function(event) {
-        panoLoader.load(event.latLng);
+
+    google.maps.event.addListener( gmap, 'click', function(event) {
+        panoLoader.load( event.latLng );
     });
 
-    google.maps.event.addListener(gmap, 'center_changed', function(event) {
-    });
-    google.maps.event.addListener(gmap, 'zoom_changed', function(event) {
-    });
-    google.maps.event.addListener(gmap, 'maptypeid_changed', function(event) {
-    });
+    google.maps.event.addListener( gmap, 'center_changed', function(event) {});
+    google.maps.event.addListener( gmap, 'zoom_changed', function(event) {});
+    google.maps.event.addListener( gmap, 'maptypeid_changed', function(event) {});
 
     svCoverage = new google.maps.StreetViewCoverageLayer();
-    svCoverage.setMap(gmap);
+    svCoverage.setMap( gmap );
 
     geocoder = new google.maps.Geocoder();
 
-    $('#mapsearch').change(function() {
-        geocoder.geocode( { 'address': $('#mapsearch').val()}, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                gmap.setCenter(results[0].geometry.location);
+    $( '#mapsearch' ).change(function() {
+        geocoder.geocode( { 'address': $( '#mapsearch' ).val()}, function( results, status ) {
+            if ( status == google.maps.GeocoderStatus.OK ) {
+                gmap.setCenter( results[0].geometry.location );
             }
         });
-    }).on('keydown', function (e) {
+    }).on( 'keydown', function (e) {
         e.stopPropagation();
     });
 
-    marker = new google.maps.Marker({ position: currentLocation, map: gmap });
+    marker = new google.maps.Marker( { position: currentLocation, map: gmap } );
     marker.setMap( gmap );
 }
 
 function checkWebVR() {
-    if(!vrmgr.isWebVRCompatible()) {
-        $("#webvrinfo").dialog({
+    if( !vrmgr.isWebVRCompatible() ) {
+        $( "#webvrinfo" ).dialog({
             modal: true,
             buttons: {
                 Ok: function() {
-                  $(this).dialog("close");
+                  $( this ).dialog( "close" );
                 }
             }
         });
     }
     else {
-        $("#webvrinfo").hide();
+        $( "#webvrinfo" ).hide();
     }
 }
 
@@ -333,9 +333,9 @@ function moveToNextPlace() {
     var minDelta = 360;
     var navList = panoLoader.links;
 
-    for (var i = 0; i < navList.length; i++) {
-        var delta = deltaAngleDeg(currHeading, navList[i].heading);
-        if (delta < minDelta && delta < NAV_DELTA) {
+    for ( var i = 0; i < navList.length; i++ ) {
+        var delta = deltaAngleDeg( currHeading, navList[i].heading );
+        if ( delta < minDelta && delta < NAV_DELTA ) {
             minDelta = delta;
             nextPoint = navList[i].pano;
         }
@@ -347,23 +347,23 @@ function moveToNextPlace() {
 }
 
 function render() {
-    if (vrmgr.isVRMode()) {
+    if ( vrmgr.isVRMode() ) {
         effect.render( scene, camera );
     }
     else {
-        renderer.render(scene, camera);
+        renderer.render( scene, camera );
     }
 }
 
 function setUiSize() {
     var width = window.innerWidth, hwidth = width/2, height = window.innerHeight;
+    var ui = $( '#ui-main' );
+    var hsize=0.60, vsize = 0.40;
 
-    var ui = $('#ui-main');
-    var hsize=0.60, vsize = 0.40, outOffset=0;
-    ui.css('width', hwidth*hsize);
-    ui.css('left', hwidth-hwidth*hsize/2) ;
-    ui.css('height', height*vsize);
-    ui.css('margin-top', height*(1-vsize)/2);
+    ui.css( 'width', hwidth * hsize );
+    ui.css( 'left', hwidth - hwidth * hsize / 2 ) ;
+    ui.css( 'height', height * vsize );
+    ui.css( 'margin-top', height * ( 1 - vsize ) / 2 );
 }
 
 function resize( event ) {
@@ -379,12 +379,13 @@ function loop() {
     requestAnimationFrame( loop );
 
     // Apply movement
-    // BaseRotationEuler.set( angleRangeRad(BaseRotationEuler.x + gamepadMoveVector.x), angleRangeRad(BaseRotationEuler.y + gamepadMoveVector.y), 0.0 );
-    // BaseRotation.setFromEuler(BaseRotationEuler, 'YZX');
+    // BaseRotationEuler.set( angleRangeRad( BaseRotationEuler.x + gamepadMoveVector.x ),
+    //                        angleRangeRad( BaseRotationEuler.y + gamepadMoveVector.y ), 0.0 );
+    // BaseRotation.setFromEuler( BaseRotationEuler, 'YZX' );
 
     // Compute heading
-    headingVector.setFromQuaternion(camera.quaternion, 'YZX');
-    currHeading = angleRangeDeg(THREE.Math.radToDeg(-headingVector.y));
+    headingVector.setFromQuaternion( camera.quaternion, 'YZX' );
+    currHeading = angleRangeDeg( THREE.Math.radToDeg( -headingVector.y ) );
 
     controls.update();
 
@@ -394,11 +395,11 @@ function loop() {
 
 function getParams() {
     var params = {};
-    var items = window.location.search.substring(1).split("&");
-    for (var i=0;i<items.length;i++) {
-        var kvpair = items[i].split("=");
-        // params[kvpair[0]] = unescape(kvpair[1]);
-        params[kvpair[0]] = decodeURI(kvpair[1]);
+    var items = window.location.search.substring( 1 ).split( "&" );
+
+    for ( var i=0; i < items.length; i++ ) {
+        var kvpair = items[i].split( "=" );
+        params[kvpair[0]] = decodeURI( kvpair[1] );
     }
     return params;
 }
@@ -408,49 +409,51 @@ $(document).ready(function() {
 
     // Read parameters
     params = getParams();
-    if (params.lat !== undefined) {
+    if ( params.lat !== undefined ) {
         DEFAULT_LOCATION.lat = params.lat;
     }
-    if (params.lng !== undefined) {
+    if ( params.lng !== undefined ) {
         DEFAULT_LOCATION.lng = params.lng;
     }
-    console.log("This should be undefined: " + params.sock);
-    if (params.sock !== undefined) {
+
+    console.log( "This should be undefined: " + params.sock );
+
+    if ( params.sock !== undefined ) {
         WEBSOCKET_ADDR = 'ws://'+params.sock;
         USE_TRACKER = true;
     }
-    if (params.q !== undefined) {
+    if ( params.q !== undefined ) {
         QUALITY = params.q;
     }
-    if (params.s !== undefined) {
+    if ( params.s !== undefined ) {
         SHOW_SETTINGS = params.s !== "false";
     }
-    // if (params.heading !== undefined) {
-    //   BaseRotationEuler.set(0.0, angleRangeRad(THREE.Math.degToRad(-parseFloat(params.heading))) , 0.0 );
-    //   BaseRotation.setFromEuler(BaseRotationEuler, 'YZX');
+    // if ( params.heading !== undefined ) {
+    //   BaseRotationEuler.set( 0.0, angleRangeRad( THREE.Math.degToRad( -parseFloat(params.heading ) ) ) , 0.0 );
+    //   BaseRotation.setFromEuler( BaseRotationEuler, 'YZX' );
     // }
-    if (params.depth !== undefined) {
+    if ( params.depth !== undefined ) {
         USE_DEPTH = params.depth !== "false";
     }
-    if (params.wf !== undefined) {
-        WORLD_FACTOR = parseFloat(params.wf);
+    if ( params.wf !== undefined ) {
+        WORLD_FACTOR = parseFloat( params.wf );
     }
 
     // Get window width and height
     WIDTH = window.innerWidth;
     HEIGHT = window.innerHeight;
 
-    $('.ui').tabs({
+    $( '.ui' ).tabs({
         activate: function( event, ui ) {
             var caller = event.target.id;
-            if (caller == 'ui-main') {
+            if ( caller == 'ui-main' ) {
                 // Activate div with id="ui-main"
                 $("#ui-main").tabs("option","active");
             }
         }
     });
-    setUiSize();
 
+    setUiSize();
     initWebGL();
     initControls();
     initGui();

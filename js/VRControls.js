@@ -1,6 +1,8 @@
 /**
  * @author dmarcos / https://github.com/dmarcos
  * @author mrdoob / http://mrdoob.com
+ *
+ * Modified by jpleitao / http://github.com/jpleitao
  */
 
 THREE.VRControls = function ( object, callback ) {

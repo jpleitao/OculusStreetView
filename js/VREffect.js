@@ -19,6 +19,7 @@
  *
  * https://drive.google.com/a/google.com/folderview?id=0BzudLt22BqGRbW9WTHMtOWMzNjQ&usp=sharing#list
  *
+ * Modified by jpleitao / http://github.com/jpleitao
  */
 THREE.VREffect = function ( renderer, done ) {
 
@@ -44,18 +45,18 @@ THREE.VREffect = function ( renderer, done ) {
 			var vrHMD;
 			var error;
 			for ( var i = 0; i < devices.length; ++ i ) {
-                console.log("Device number " + (i+1));
 				if ( devices[i] instanceof HMDVRDevice ) {
 					vrHMD = devices[i];
                     self._vrHMD = vrHMD;
 
                     if (vrHMD.getEyeParameters !== undefined) {
+						// This code should be compatible with DK2
                         self.leftEyeTranslation = vrHMD.getEyeParameters("left").eyeTranslation;
                         self.rightEyeTranslation = vrHMD.getEyeParameters("right").eyeTranslation;
                         self.leftEyeFOV = vrHMD.getEyeParameters("left").recommendedFieldOfView;
                         self.rightEyeFOV = vrHMD.getEyeParameters("right").recommendedFieldOfView;
                     } else {
-                        //Old code
+                        // Code compatible with DK1
                         self.leftEyeTranslation = vrHMD.getEyeTranslation("left");
                         self.rightEyeTranslation = vrHMD.getEyeTranslation("right");
                         self.leftEyeFOV = vrHMD.getRecommendedEyeFieldOfView("left");
