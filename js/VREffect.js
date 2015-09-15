@@ -41,7 +41,6 @@ THREE.VREffect = function ( renderer, done ) {
 			navigator.mozGetVRDevices( gotVRDevices );
 		}
 		function gotVRDevices( devices ) {
-            console.log("Entrei no gotVRDevices and have " + devices.length);
 			var vrHMD;
 			var error;
 			for ( var i = 0; i < devices.length; ++ i ) {
@@ -56,6 +55,7 @@ THREE.VREffect = function ( renderer, done ) {
                         self.leftEyeFOV = vrHMD.getEyeParameters("left").recommendedFieldOfView;
                         self.rightEyeFOV = vrHMD.getEyeParameters("right").recommendedFieldOfView;
                     } else {
+                        //Old code
                         self.leftEyeTranslation = vrHMD.getEyeTranslation("left");
                         self.rightEyeTranslation = vrHMD.getEyeTranslation("right");
                         self.leftEyeFOV = vrHMD.getRecommendedEyeFieldOfView("left");

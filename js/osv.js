@@ -169,54 +169,6 @@ function initControls() {
         console.log("double-click in the viewer!");
         moveToNextPlace();
     });
-
-    // Gamepad
-    // ---------------------------------------
-    gamepad = new Gamepad();
-    gamepad.bind(Gamepad.Event.CONNECTED, function(device) {
-        console.log("Gamepad CONNECTED");
-    });
-
-    gamepad.bind(Gamepad.Event.BUTTON_DOWN, function(e) {
-        if (e.control == "FACE_2") {
-            $('.ui').toggle(200);
-        }
-    });
-
-    // Look for tick event so that we can hold down the FACE_1 button and
-    // continually move in the current direction
-    gamepad.bind(Gamepad.Event.TICK, function(gamepads) {
-        // Multiple calls before next place has finished loading do not matter
-        // GSVPano library will ignore these
-        if (gamepads[0].state.FACE_1 === 1) {
-            moveToNextPlace();
-        }
-    });
-
-    gamepad.bind(Gamepad.Event.AXIS_CHANGED, function(e) {
-        // ignore deadzone
-        var value = e.value;
-        if (value < -DEADZONE) {
-            value = value + DEADZONE;
-        }
-        else if(value > DEADZONE) {
-            value = value - DEADZONE;
-        }
-        else {
-            value = 0;
-        }
-
-        if (e.axis == "LEFT_STICK_X") {
-            gamepadMoveVector.y = -value*GAMEPAD_SPEED;
-        }
-        else if (e.axis == "LEFT_STICK_Y") {
-            gamepadMoveVector.x = -value*GAMEPAD_SPEED;
-        }
-    });
-
-    if (!gamepad.init()) {
-        console.log("Gamepad not supported");
-    }
 }
 
 function initGui() {
