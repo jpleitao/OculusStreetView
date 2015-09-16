@@ -1,22 +1,14 @@
 OculusStreetView
 ================
 
-Google Street View viewer for the Oculus Rift
+Google Street View viewer for the Oculus Rift, based on troffmo5's project.
 
-Demo
--------------
-http://oculusstreetview.eu.pn/index.html
+Original project can be found in https://github.com/troffmo5/OculusStreetView
 
 Usage
 -------------
-- Use the mini-map to select the location.
-- Double press the spacebar to toggle mini-map and settings
-
-Navigation
--------------
-- **Keyboard**: Arrows keys to look around and double-press ctrl to enter a new location
-- **Mouse**: Click and drag to look around and left double-click to enter a new location
-- **Gamepad**: (Chrome only) Button 0 to enter a new location
+- Open the web page (a series of parameters can be specified in the URL -- See next section) 
+- Double click the image to start the VR mode, or click in the small icon on the bottom of the web page
 
 URL Parameters
 -------------
@@ -25,9 +17,29 @@ index.html accepts the following parameters
 - *lat*, *lng* : latitude and longitude (e.g lat=-23.442896&lng=151.906584)
 - *q* : image quality (1: worst, 4:best)
 - *s* : show mini-map and settings (true or false)
+- *depth* : Use depth information (*true* or *false*)
 
 Example:  
-http://oculusstreetview.eu.pn/index.html?lat=-23.442896&lng=151.906584&q=4&s=false
+file://<Path-to-index-file>/index.html?lat=-23.442896&lng=151.906584&q=4&s=false
+
+<!--
+Controls
+-------------
+- **Keyboard**: Arrows keys to look around and double-press ctrl to enter a new location
+- **Mouse**: Click and drag to look around and left double-click to enter a new location
+-->
+
+Supported Browsers
+-------------
+
+As of now all the testing is being made with the **Oculus Rift DK1**, a **Chromium WebVR** build and the **vr.js** plugin.
+
+The **Chromium WebVR** build that is currently being tested is available at
+https://drive.google.com/folderview?id=0BzudLt22BqGRa29TN1loVDBSSE0&tid=0BzudLt22BqGRbW9WTHMtOWMzNjQ , while the **vr.js**
+plugin can be found in the following link: https://github.com/benvanik/vr.js
+
+**Mozilla's Nightly** versions of Firefox (containing WebVR support) have not been tested yet, but they should also work,
+provided the required plugin is correctly installed.
 
 Licence
 -------------

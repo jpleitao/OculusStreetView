@@ -10,14 +10,11 @@
 // ----------------------------------------------
 var QUALITY = 3;
 var DEFAULT_LOCATION = { lat:44.301945982379095,  lng:9.211585521697998 };
-var USE_TRACKER = false;
 var SHOW_SETTINGS = true;
 var NAV_DELTA = 45;
 var FAR = 1000;
 var USE_DEPTH = false;
-var WORLD_FACTOR = 1.0;
 
-var WEBSOCKET_ADDR;
 var scene;
 var camera;
 var controls;
@@ -326,12 +323,6 @@ $(document).ready(function() {
         DEFAULT_LOCATION.lng = params.lng;
     }
 
-    console.log( "This should be undefined: " + params.sock );
-
-    if ( params.sock !== undefined ) {
-        WEBSOCKET_ADDR = 'ws://'+params.sock;
-        USE_TRACKER = true;
-    }
     if ( params.q !== undefined ) {
         QUALITY = params.q;
     }
@@ -347,9 +338,6 @@ $(document).ready(function() {
 
     if ( params.depth !== undefined ) {
         USE_DEPTH = params.depth !== "false";
-    }
-    if ( params.wf !== undefined ) {
-        WORLD_FACTOR = parseFloat( params.wf );
     }
 
     // Get window width and height
