@@ -9,6 +9,7 @@ Usage
 -------------
 - Open the web page (a series of parameters can be specified in the URL -- See next section) 
 - Double click the image to start the VR mode, or click in the small icon on the bottom of the web page
+- Use the controls listed above to move around in the world (not yet implemented)
 
 URL Parameters
 -------------
@@ -20,14 +21,11 @@ index.html accepts the following parameters
 - *depth* : Use depth information (*true* or *false*)
 
 Example:  
-file://<Path-to-index-file>/index.html?lat=-23.442896&lng=151.906584&q=4&s=false
+file://index.html?lat=-23.442896&lng=151.906584&q=4&s=false
 
-<!--
 Controls
 -------------
-- **Keyboard**: Arrows keys to look around and double-press ctrl to enter a new location
-- **Mouse**: Click and drag to look around and left double-click to enter a new location
--->
+- Not yet implemented
 
 Supported Browsers
 -------------
