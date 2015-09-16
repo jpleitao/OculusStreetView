@@ -14,7 +14,7 @@ var USE_TRACKER = false;
 var SHOW_SETTINGS = true;
 var NAV_DELTA = 45;
 var FAR = 1000;
-var USE_DEPTH = true;
+var USE_DEPTH = false;
 var WORLD_FACTOR = 1.0;
 
 var WEBSOCKET_ADDR;
@@ -30,19 +30,12 @@ var vrmgr;
 var panoLoader;
 var panoDepthLoader;
 
-var marker;
-var currentLocation;
-var gmap;
-var svCoverage;
-var geocoder;
-
 
 // Globals
 // ----------------------------------------------
 var WIDTH, HEIGHT;
 var currHeading = 0;
 var centerHeading = 0;
-// var navList = [];
 
 var headingVector = new THREE.Euler();
 
@@ -135,25 +128,12 @@ function initControls() {
     $( document ).keydown( function( e ) {
         //console.log(e.keyCode);
         switch( e.keyCode ) {
-            case 32: // Space
-                var spaceKeyTime = new Date();
-                // Count double clicking
-                if ( spaceKeyTime - lastSpaceKeyTime < 300 ) {
-                    $( '.ui' ).toggle( 200 );
-                }
-                lastSpaceKeyTime = spaceKeyTime;
-                break;
-            case 17: // Ctrl
-                var ctrlKeyTime = new Date();
-                // Count double clicking
-                if ( ctrlKeyTime - lastCtrlKeyTime < 300 ) {
-                    moveToNextPlace();
-                }
-                lastCtrlKeyTime = ctrlKeyTime;
+            case 87: //W
+                console.log("Going to load new location");
+                panoLoader.load( new google.maps.LatLng( 40.201877, -8.414434 ) );
                 break;
             case 18: // Alt
                 USE_DEPTH = !USE_DEPTH;
-                $( '#depth' ).prop( 'checked', USE_DEPTH );
                 setSphereGeometry();
                 break;
         }
@@ -170,15 +150,6 @@ function initControls() {
 }
 
 function initGui() {
-    if (!SHOW_SETTINGS) {
-        $( '.ui' ).hide();
-    }
-
-    $( '#depth' ).change( function( event ) {
-        USE_DEPTH = $( '#depth' ).is( ':checked' );
-        setSphereGeometry();
-    });
-
     window.addEventListener( 'resize', resize, false );
 }
 
@@ -192,13 +163,11 @@ function initPano() {
             progBar.visible = true;
             progBar.scale = new THREE.Vector3( progress / 100.0,  1,1 );
         }
-        $( ".mapprogress" ).progressbar( "option", "value", progress );
 
     };
     panoLoader.onPanoramaData = function( result ) {
         progBarContainer.visible = true;
         progBar.visible = false;
-        $( '.mapprogress' ).show();
     };
 
     panoLoader.onNoPanoramaData = function( status ) {
@@ -217,22 +186,6 @@ function initPano() {
 
         progBarContainer.visible = false;
         progBar.visible = false;
-
-        marker.setMap( null );
-        marker= new google.maps.Marker({ position: this.location.latLng, map: gmap});
-        marker.setMap( gmap);
-
-        $('.mapprogress').hide();
-
-        if ( window.history ) {
-            // FIXME: Needed?
-            var newUrl = '?lat=' + this.location.latLng.lat() + '&lng=' + this.location.latLng.lng();
-            newUrl += USE_TRACKER ? '&sock=' + encodeURIComponent( WEBSOCKET_ADDR.slice(5) ) : '';
-            newUrl += '&q=' + QUALITY;
-            newUrl += '&s=' + $( '#settings' ).is( ':visible' );
-            newUrl += '&heading=' + currHeading;
-            window.history.pushState( '', '', newUrl );
-        }
 
         panoDepthLoader.load( this.location.pano );
     };
@@ -265,50 +218,6 @@ function setSphereGeometry() {
         }
     }
     geom.verticesNeedUpdate = true;
-}
-
-function initGoogleMap() {
-    $('.mapprogress').progressbar({ value: false });
-
-    currentLocation = new google.maps.LatLng( DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lng );
-
-    var mapel = $( '#map' );
-    mapel.on( 'mousemove', function (e) {
-        e.stopPropagation();
-    });
-
-    gmap = new google.maps.Map( mapel[0], {
-        zoom: 14,
-        center: currentLocation,
-        mapTypeId: google.maps.MapTypeId.HYBRID,
-        streetViewControl: false
-    });
-
-    google.maps.event.addListener( gmap, 'click', function(event) {
-        panoLoader.load( event.latLng );
-    });
-
-    google.maps.event.addListener( gmap, 'center_changed', function(event) {});
-    google.maps.event.addListener( gmap, 'zoom_changed', function(event) {});
-    google.maps.event.addListener( gmap, 'maptypeid_changed', function(event) {});
-
-    svCoverage = new google.maps.StreetViewCoverageLayer();
-    svCoverage.setMap( gmap );
-
-    geocoder = new google.maps.Geocoder();
-
-    $( '#mapsearch' ).change(function() {
-        geocoder.geocode( { 'address': $( '#mapsearch' ).val()}, function( results, status ) {
-            if ( status == google.maps.GeocoderStatus.OK ) {
-                gmap.setCenter( results[0].geometry.location );
-            }
-        });
-    }).on( 'keydown', function (e) {
-        e.stopPropagation();
-    });
-
-    marker = new google.maps.Marker( { position: currentLocation, map: gmap } );
-    marker.setMap( gmap );
 }
 
 function checkWebVR() {
@@ -379,6 +288,7 @@ function loop() {
     requestAnimationFrame( loop );
 
     // Apply movement
+    // FIXME: SEE THIS
     // BaseRotationEuler.set( angleRangeRad( BaseRotationEuler.x + gamepadMoveVector.x ),
     //                        angleRangeRad( BaseRotationEuler.y + gamepadMoveVector.y ), 0.0 );
     // BaseRotation.setFromEuler( BaseRotationEuler, 'YZX' );
@@ -428,10 +338,13 @@ $(document).ready(function() {
     if ( params.s !== undefined ) {
         SHOW_SETTINGS = params.s !== "false";
     }
+
+    // FIXME: ALSO CHECK THIS
     // if ( params.heading !== undefined ) {
     //   BaseRotationEuler.set( 0.0, angleRangeRad( THREE.Math.degToRad( -parseFloat(params.heading ) ) ) , 0.0 );
     //   BaseRotation.setFromEuler( BaseRotationEuler, 'YZX' );
     // }
+
     if ( params.depth !== undefined ) {
         USE_DEPTH = params.depth !== "false";
     }
@@ -443,22 +356,11 @@ $(document).ready(function() {
     WIDTH = window.innerWidth;
     HEIGHT = window.innerHeight;
 
-    $( '.ui' ).tabs({
-        activate: function( event, ui ) {
-            var caller = event.target.id;
-            if ( caller == 'ui-main' ) {
-                // Activate div with id="ui-main"
-                $("#ui-main").tabs("option","active");
-            }
-        }
-    });
-
     setUiSize();
     initWebGL();
     initControls();
     initGui();
     initPano();
-    initGoogleMap();
 
     // Load default location
     panoLoader.load( new google.maps.LatLng( DEFAULT_LOCATION.lat, DEFAULT_LOCATION.lng ) );
