@@ -14,7 +14,7 @@ THREE.VRControls = function ( object, callback ) {
 
 	var onVRDevices = function ( devices ) {
 
-		for ( var i = 0; i < devices.length; i ++ ) {
+        for ( var i = 0; i < devices.length; i ++ ) {
 
 			var device = devices[ i ];
 
@@ -51,37 +51,37 @@ THREE.VRControls = function ( object, callback ) {
 
 	this.update = function () {
 
-	  for ( var i = 0; i < vrInputs.length; i++ ) {
+        for ( var i = 0; i < vrInputs.length; i++ ) {
 
-	    var vrInput = vrInputs[ i ];
+            var vrInput = vrInputs[ i ];
 
-	    var state = vrInput.getState();
+	        var state = vrInput.getState();
 
-	    if ( state.orientation !== null ) {
+    	    if ( state.orientation !== null ) {
 
-	      object.quaternion.copy( state.orientation );
+                object.quaternion.copy( state.orientation );
+
+	        }
+
+	        if ( state.position !== null ) {
+
+	            object.position.copy( state.position ).multiplyScalar( scope.scale );
+
+	        }
 
 	    }
-
-	    if ( state.position !== null ) {
-
-	      object.position.copy( state.position ).multiplyScalar( scope.scale );
-
-	    }
-
-	  }
 
 	};
 
 	this.zeroSensor = function () {
 
-	  for ( var i = 0; i < vrInputs.length; i++ ) {
+        for ( var i = 0; i < vrInputs.length; i++ ) {
 
-	    var vrInput = vrInputs[ i ];
+            var vrInput = vrInputs[ i ];
 
-	    vrInput.zeroSensor();
+            vrInput.zeroSensor();
 
-	  }
+	    }
 
 	};
 

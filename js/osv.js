@@ -72,6 +72,7 @@ function initWebGL() {
     // Create camera
     camera = new THREE.PerspectiveCamera( 60, WIDTH/HEIGHT, 0.1, FAR );
     camera.target = new THREE.Vector3( 1, 0, 0 );
+
     controls  = new THREE.VRControls( camera );
 
     scene.add( camera );
@@ -120,12 +121,9 @@ function initControls() {
 
     // Keyboard
     // ---------------------------------------
-    var lastSpaceKeyTime = new Date(), lastCtrlKeyTime = lastSpaceKeyTime;
-
     $( document ).keydown( function( e ) {
-        //console.log(e.keyCode);
         switch( e.keyCode ) {
-            case 87: //W
+            case 87: // W
                 console.log("Going to load new location");
                 panoLoader.load( new google.maps.LatLng( 40.201877, -8.414434 ) );
                 break;
@@ -133,17 +131,22 @@ function initControls() {
                 USE_DEPTH = !USE_DEPTH;
                 setSphereGeometry();
                 break;
+            case 37: // Left Arrow
+                break;
+            case 39: // Right Arrow
+                break;
+            case 38: // Up Arrow - Move forward
+                console.log("Move Forward");
+                moveToNextPlace();
+                break;
+            case 40: // Down Arrow
+                break;
         }
     });
 
     // Mouse
     // ---------------------------------------
-    var viewer = $( '#viewer' );
-
-    viewer.dblclick( function() {
-        console.log( "double-click in the viewer!" );
-        moveToNextPlace();
-    });
+    $( '#viewer' ).dblclick( moveToNextPlace );
 }
 
 function initGui() {
@@ -172,7 +175,7 @@ function initPano() {
     };
 
     panoLoader.onPanoramaLoad = function() {
-        var a = THREE.Math.degToRad( 90-panoLoader.heading );
+        var a = THREE.Math.degToRad( 90 - panoLoader.heading );
         projSphere.quaternion.setFromEuler( new THREE.Euler( 0, a, 0, 'YZX' ) );
 
         projSphere.material.wireframe = false;
@@ -247,8 +250,11 @@ function moveToNextPlace() {
         }
     }
 
-    if (nextPoint) {
-        panoLoader.load(nextPoint);
+    if ( nextPoint ) {
+        console.log("Have next point");
+        panoLoader.load( nextPoint );
+    } else {
+        console.log("Do not have next point");
     }
 }
 
@@ -261,21 +267,9 @@ function render() {
     }
 }
 
-function setUiSize() {
-    var width = window.innerWidth, hwidth = width/2, height = window.innerHeight;
-    var ui = $( '#ui-main' );
-    var hsize=0.60, vsize = 0.40;
-
-    ui.css( 'width', hwidth * hsize );
-    ui.css( 'left', hwidth - hwidth * hsize / 2 ) ;
-    ui.css( 'height', height * vsize );
-    ui.css( 'margin-top', height * ( 1 - vsize ) / 2 );
-}
-
 function resize( event ) {
     WIDTH = window.innerWidth;
     HEIGHT = window.innerHeight;
-    setUiSize();
 
     renderer.setSize( WIDTH, HEIGHT );
     camera.projectionMatrix.makePerspective( 60, WIDTH /HEIGHT, 1, 1100 );
@@ -283,12 +277,6 @@ function resize( event ) {
 
 function loop() {
     requestAnimationFrame( loop );
-
-    // Apply movement
-    // FIXME: SEE THIS
-    // BaseRotationEuler.set( angleRangeRad( BaseRotationEuler.x + gamepadMoveVector.x ),
-    //                        angleRangeRad( BaseRotationEuler.y + gamepadMoveVector.y ), 0.0 );
-    // BaseRotation.setFromEuler( BaseRotationEuler, 'YZX' );
 
     // Compute heading
     headingVector.setFromQuaternion( camera.quaternion, 'YZX' );
@@ -344,7 +332,6 @@ $(document).ready(function() {
     WIDTH = window.innerWidth;
     HEIGHT = window.innerHeight;
 
-    setUiSize();
     initWebGL();
     initControls();
     initGui();
