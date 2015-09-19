@@ -9,7 +9,7 @@
 // Parameters
 // ----------------------------------------------
 var QUALITY = 3;
-var DEFAULT_LOCATION = { lat:44.301945982379095,  lng:9.211585521697998 };
+var DEFAULT_LOCATION = { lat : 40.201877,  lng : -8.414434 };
 var SHOW_SETTINGS = true;
 var NAV_DELTA = 45;
 var FAR = 1000;
@@ -123,23 +123,12 @@ function initControls() {
     // ---------------------------------------
     $( document ).keydown( function( e ) {
         switch( e.keyCode ) {
-            case 87: // W
-                console.log("Going to load new location");
-                panoLoader.load( new google.maps.LatLng( 40.201877, -8.414434 ) );
-                break;
             case 18: // Alt
                 USE_DEPTH = !USE_DEPTH;
                 setSphereGeometry();
                 break;
-            case 37: // Left Arrow
-                break;
-            case 39: // Right Arrow
-                break;
             case 38: // Up Arrow - Move forward
-                console.log("Move Forward");
                 moveToNextPlace();
-                break;
-            case 40: // Down Arrow
                 break;
         }
     });
