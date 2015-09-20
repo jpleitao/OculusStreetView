@@ -25,7 +25,12 @@ file://index.html?lat=-23.442896&lng=151.906584&q=4&s=false
 
 Controls
 -------------
-- Not yet implemented
+- *Left Arrow* : Look left
+- *Right Arrow* : Look right
+- *Up Arrow* : Look up
+- *Down Arrow* : Look down
+- *Alt* : Toogle depth
+- *Enter* : Move forward
 
 Supported Browsers
 -------------

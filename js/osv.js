@@ -8,12 +8,12 @@
 
 // Parameters
 // ----------------------------------------------
-var QUALITY = 3;
-var DEFAULT_LOCATION = { lat : 40.201877,  lng : -8.414434 };
-var SHOW_SETTINGS = true;
-var NAV_DELTA = 45;
-var FAR = 1000;
-var USE_DEPTH = false;
+var QUALITY;
+var DEFAULT_LOCATION;
+var SHOW_SETTINGS;
+var NAV_DELTA;
+var FAR;
+var USE_DEPTH;
 
 var scene;
 var camera;
@@ -27,6 +27,9 @@ var vrmgr;
 var panoLoader;
 var panoDepthLoader;
 
+var rotation_angle_cons;
+var rotation;
+
 
 // Globals
 // ----------------------------------------------
@@ -34,7 +37,7 @@ var WIDTH, HEIGHT;
 var currHeading = 0;
 var centerHeading = 0;
 
-var headingVector = new THREE.Euler();
+var headingVector;
 
 // Utility function
 // ----------------------------------------------
@@ -46,20 +49,8 @@ function angleRangeDeg( angle ) {
     return angle;
 }
 
-function angleRangeRad( angle ) {
-    angle %= 2*Math.PI;
-    if ( angle < 0 ) {
-        angle += 2*Math.PI;
-    }
-    return angle;
-}
-
 function deltaAngleDeg( a, b ) {
     return Math.min( 360 - ( Math.abs( a - b ) % 360 ), Math.abs( a - b ) % 360 );
-}
-
-function deltaAngleRas( a, b ) {
-  // todo
 }
 
 
@@ -71,10 +62,13 @@ function initWebGL() {
 
     // Create camera
     camera = new THREE.PerspectiveCamera( 60, WIDTH/HEIGHT, 0.1, FAR );
-    camera.target = new THREE.Vector3( 1, 0, 0 );
+    camera.lookAt(new THREE.Vector3( 1, 0, 0 ));
+    camera.rotation.order = 'YXZ'; // Rotate first around the Y-Axis, then X, then Z
 
+    // Add VR Controls
     controls  = new THREE.VRControls( camera );
 
+    // Add camera to the scene
     scene.add( camera );
 
     // Add projection sphere
@@ -115,27 +109,36 @@ function initWebGL() {
 
     var viewer = $( '#viewer' );
     viewer.append( renderer.domElement );
+    return true;
 }
 
 function initControls() {
 
     // Keyboard
     // ---------------------------------------
-    $( document ).keydown( function( e ) {
-        switch( e.keyCode ) {
+    $( document ).keydown( function( event ) {
+        switch( event.keyCode ) {
+            case 13: // Enter - Move forward
+                moveToNextPlace();
+                break;
             case 18: // Alt
                 USE_DEPTH = !USE_DEPTH;
                 setSphereGeometry();
                 break;
-            case 38: // Up Arrow - Move forward
-                moveToNextPlace();
+            case 37: // Left Arrow - Look left
+                updateRotation( false, true );
+                break;
+            case 38: // Up Arrow - Look up
+                updateRotation( true, true );
+                break;
+            case 39: // Right Arrow - Look right
+                updateRotation( false, false );
+                break;
+            case 40: // Down Arrow -- Look down
+                updateRotation( true, false );
                 break;
         }
     });
-
-    // Mouse
-    // ---------------------------------------
-    $( '#viewer' ).dblclick( moveToNextPlace );
 }
 
 function initGui() {
@@ -247,11 +250,43 @@ function moveToNextPlace() {
     }
 }
 
+/**
+ * Process current rotation input, updating the rotation variable
+ * @param updateX   Update the x field of the rotation variable
+ * @param increase  Increase the rotation value of the given field
+ */
+function updateRotation( updateX, increase) {
+    if ( updateX ) {
+        if ( increase ) {
+            rotation.x = ( rotation.x + rotation_angle_cons * Math.PI / 180 ) % (2 * Math.PI);
+        } else {
+            rotation.x = ( rotation.x - rotation_angle_cons * Math.PI / 180 ) % (2 * Math.PI);
+        }
+    } else if ( increase ){
+        rotation.y = ( rotation.y + rotation_angle_cons * Math.PI / 180 ) % (2 * Math.PI);
+    } else {
+        rotation.y = ( rotation.y - rotation_angle_cons * Math.PI / 180 ) % (2 * Math.PI);
+    }
+}
+
+/**
+ * Update the rotation of the scene's camera
+ */
+function updateCameraRotation() {
+    camera.rotation.x = rotation.x;
+    camera.rotation.y = rotation.y;
+    camera.rotation.z = rotation.z;
+}
+
+/**
+ * Renders the scene, selecting the appropriate renderer taken into account the display mode (normal mode or VR mode)
+ */
 function render() {
     if ( vrmgr.isVRMode() ) {
         effect.render( scene, camera );
     }
     else {
+        updateCameraRotation();
         renderer.render( scene, camera );
     }
 }
@@ -291,6 +326,14 @@ function getParams() {
 $(document).ready(function() {
     var params;
 
+    // Initialize some default values
+    QUALITY = 3;
+    DEFAULT_LOCATION = { lat : 40.201877,  lng : -8.414434 };
+    SHOW_SETTINGS = true;
+    NAV_DELTA = 45;
+    FAR = 1000;
+    headingVector = new THREE.Euler();
+
     // Read parameters
     params = getParams();
     if ( params.lat !== undefined ) {
@@ -307,12 +350,6 @@ $(document).ready(function() {
         SHOW_SETTINGS = params.s !== "false";
     }
 
-    // FIXME: ALSO CHECK THIS
-    // if ( params.heading !== undefined ) {
-    //   BaseRotationEuler.set( 0.0, angleRangeRad( THREE.Math.degToRad( -parseFloat(params.heading ) ) ) , 0.0 );
-    //   BaseRotation.setFromEuler( BaseRotationEuler, 'YZX' );
-    // }
-
     if ( params.depth !== undefined ) {
         USE_DEPTH = params.depth !== "false";
     }
@@ -321,7 +358,13 @@ $(document).ready(function() {
     WIDTH = window.innerWidth;
     HEIGHT = window.innerHeight;
 
-    initWebGL();
+    // Initialize user rotation values
+    rotation_angle_cons = 10;
+    rotation = { x: 0, y : 0, z : 0 };
+
+    if ( !initWebGL() ) {
+        return ;
+    }
     initControls();
     initGui();
     initPano();
